@@ -4,6 +4,8 @@ import {UserDto} from "./dto/user.dto";
 import {ApiOperation, ApiResponse, ApiTags} from "@nestjs/swagger";
 import {UserModel} from "./model/user.model";
 import {JwtAuthGuard} from "../auth/guards/jwtAuth.guard";
+import {RolesDecorator} from "../role/decorators/roles.decorator";
+import {RolesGuard} from "../auth/guards/roles.guard";
 
 @ApiTags('Users')
 @Controller('user')
@@ -17,7 +19,8 @@ export class UserController {
         return this.userService.createUser(userDto);
     }
 
-    @UseGuards(JwtAuthGuard)
+    @RolesDecorator('admin')
+    @UseGuards(RolesGuard)
     @ApiOperation({summary: 'Find all users'})
     @ApiResponse({type: [UserModel]})
     @Get()

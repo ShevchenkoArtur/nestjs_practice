@@ -11,8 +11,8 @@ export class AuthService {
         private readonly jwtService: JwtService
     ) {}
 
-    private generateToken(email) {
-        const payload = {email}
+    private generateToken(user) {
+        const payload = {email: user.email, id: user.id, roles: user.roles}
 
         return {
             access_token: this.jwtService.sign(payload)
@@ -32,7 +32,7 @@ export class AuthService {
             }
         );
 
-        return this.generateToken(userDto.email);
+        return this.generateToken(newUser);
     }
 
     async login(userDto: UserDto) {
@@ -46,6 +46,6 @@ export class AuthService {
             throw new BadRequestException('wrong password');
         }
 
-        return this.generateToken(userDto.email)
+        return this.generateToken(user)
     }
 }
