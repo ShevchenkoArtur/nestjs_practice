@@ -31,4 +31,9 @@ export class UserController {
     addRole(@Body() addRoleDto) {
         return this.userService.addRole(addRoleDto);
     }
+
+    @Post('ban')
+    ban(@Body() banDto) {
+        return this.userService.ban(banDto);
+    }
 }

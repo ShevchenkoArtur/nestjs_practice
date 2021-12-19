@@ -39,4 +39,16 @@ export class UserService {
 
         throw new BadRequestException()
     }
+
+    async ban(banDto) {
+        const user = await this.userRepo.findByPk(banDto.userId);
+        if(!user) {
+            throw new BadRequestException()
+        }
+
+        user.banned = true;
+        user.banReason = banDto.banReason
+        await user.save()
+        return user
+    }
 }
