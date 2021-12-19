@@ -3,7 +3,6 @@ import {UserService} from "./user.service";
 import {UserDto} from "./dto/user.dto";
 import {ApiOperation, ApiResponse, ApiTags} from "@nestjs/swagger";
 import {UserModel} from "./model/user.model";
-import {JwtAuthGuard} from "../auth/guards/jwtAuth.guard";
 import {RolesDecorator} from "../role/decorators/roles.decorator";
 import {RolesGuard} from "../auth/guards/roles.guard";
 
@@ -26,5 +25,10 @@ export class UserController {
     @Get()
     findAllUsers() {
         return this.userService.findAllUsers();
+    }
+
+    @Post('add-role')
+    addRole(@Body() addRoleDto) {
+        return this.userService.addRole(addRoleDto);
     }
 }

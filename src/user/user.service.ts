@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import {BadRequestException, Injectable} from '@nestjs/common';
 import {InjectModel} from "@nestjs/sequelize";
 import {UserModel} from "./model/user.model";
 import {UserDto} from "./dto/user.dto";
@@ -26,5 +26,17 @@ export class UserService {
 
     async findUserByEmail(email) {
         return this.userRepo.findOne({where: {email}, include: {all: true}})
+    }
+
+    async addRole(addRoleDto) {
+        const user = await this.userRepo.findByPk(addRoleDto.userId);
+        const role = await this.roleService.findRoleByValue(addRoleDto.value);
+
+        if(user && role) {
+            await user.$add('role', role.id)
+            return user
+        }
+
+        throw new BadRequestException()
     }
 }
