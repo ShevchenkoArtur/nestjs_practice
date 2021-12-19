@@ -1,5 +1,7 @@
-import {Column, Model, Table, DataType} from "sequelize-typescript";
+import {Column, Model, Table, DataType, BelongsToMany} from "sequelize-typescript";
 import {RoleDto} from "../dto/role.dto";
+import {UserModel} from "../../user/model/user.model";
+import {UserRoleModel} from "./userRole.model";
 
 @Table({tableName: 'roles'})
 export class RoleModel extends Model<RoleModel, RoleDto> {
@@ -11,4 +13,7 @@ export class RoleModel extends Model<RoleModel, RoleDto> {
 
     @Column({type: DataType.STRING, allowNull: false})
     description: string;
+
+    @BelongsToMany(() => UserModel, () => UserRoleModel)
+    users: UserModel[];
 }
