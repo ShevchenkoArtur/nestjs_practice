@@ -23,4 +23,8 @@ export class UserService {
     async findAllUsers() {
         return this.userRepo.findAll({include: {all: true}});
     }
+
+    async findUserByEmail(email) {
+        return this.userRepo.findOne({where: {email}, include: {all: true}})
+    }
 }

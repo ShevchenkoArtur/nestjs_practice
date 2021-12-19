@@ -11,7 +11,7 @@ export class UserModel extends Model<UserModel, UserDto> {
     id: number;
 
     @ApiProperty({example: 'email21@gmail.com', description: 'Email address'})
-    @Column({type: DataType.STRING, unique: true, allowNull: false})
+    @Column({type: DataType.STRING, allowNull: false})
     email:string;
 
     @ApiProperty({example: 'qweg324tf', description: 'Password'})
