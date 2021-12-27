@@ -6,25 +6,46 @@
               content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>Websockets</title>
-        <link rel="stylesheet" href="./style.css">
         <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
         <script src="/socket.io/socket.io.js"></script>
     </head>
     <body>
         <main>
-            <section class="alerts">
-                alerts
-            </section>
-            <section id="v-app" class="chat">
+            <section id="v-app">
                 <h1>Websockets</h1>
                 <form>
                     <input v-model="text" type="text"/>
                     <button type="submit" @click.prevent="sendChatMessage()">send</button>
                 </form>
+                <div class="tab-row">
+                    <button
+                            class="tab-btn" :class="{ active: activeRoom == 'general' }"
+                            @click="activeRoom = 'general'"
+                    >
+                        General
+                    </button>
+                    <button
+                            class="tab-btn" :class="{ active: activeRoom == 'typescript' }"
+                            @click="activeRoom = 'typescript'"
+                    >
+                        TypeScript
+                    </button>
+                    <button
+                            class="tab-btn" :class="{ active: activeRoom == 'nestjs' }"
+                            @click="activeRoom = 'nestjs'"
+                    >
+                        NestJS
+                    </button>
+                </div>
+                <div class="tab-row">
+                    Status: {{ isMemberOfActiveRoom ? 'Joined' : 'NOT Joined' }}
+                    <button @click="toggleRoomMembership()">
+                        {{ isMemberOfActiveRoom ? 'Leave' : 'Join' }}
+                    </button>
+                </div>
                 <ul>
-                    <li v-for="msg of messages">
-                        <strong>{{ msg.sender }}:</strong>
-                        {{ msg.message }}
+                    <li v-for="msg of messages[activeRoom]">
+                        <strong>{{ msg.sender }}:</strong> {{ msg.message }}
                     </li>
                 </ul>
             </section>
@@ -35,22 +56,44 @@
             el: '#v-app',
             data: {
               username: '',
-              title: 'Websockets testing',
               text: '',
-              messages: [],
-              alerts: [],
+              messages: {
+                general: [],
+                typescript: [],
+                nestjs: [],
+              },
+              rooms: {
+                general: false,
+                typescript: false,
+                nestjs: false,
+              },
               socket: {chat: null, alerts: null},
+              activeRoom: 'general'
             },
             methods: {
               sendChatMessage() {
-                this.socket.chat.emit('chatToServer', {sender: this.username, message: this.text});
-                this.text = '';
+                // Check if user is member of activeRoom
+                if(this.isMemberOfActiveRoom) {
+                  this.socket.chat.emit('chatToServer', {sender: this.username, room: this.activeRoom, message: this.text});
+                  this.text = '';
+                } else {
+                  alert('You must be a member of active room to send messages');
+                }
               },
               receiveChatMessage(msg) {
-                this.messages.push(msg);
+                this.messages[msg.room].push(msg);
               },
-              receiveAlertMessage(msg) {
-                this.alerts.push(msg);
+              toggleRoomMembership() {
+                if (this.isMemberOfActiveRoom) {
+                  this.socket.chat.emit('leaveRoom', this.activeRoom);
+                } else {
+                  this.socket.chat.emit('joinRoom', this.activeRoom);
+                }
+              }
+            },
+            computed: {
+              isMemberOfActiveRoom() {
+                return this.rooms[this.activeRoom];
               }
             },
             created() {
@@ -61,9 +104,16 @@
                 this.receiveChatMessage(msg);
               })
 
-              this.socket.alerts = new io('http://localhost:3000/alert');
-              this.socket.alerts.on('alertToClient', (msg) => {
-                this.receiveAlertMessage(msg);
+              this.socket.chat.on('connect', () => {
+                this.toggleRoomMembership();
+              })
+
+              this.socket.chat.on('joinedRoom', (room) => {
+                this.rooms[room] = true;
+              })
+
+              this.socket.chat.on('leftRoom', (room) => {
+                this.rooms[room] = false;
               })
             }
           })
