@@ -6,23 +6,30 @@
               content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>Websockets</title>
+        <link rel="stylesheet" href="./style.css">
         <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
         <script src="/socket.io/socket.io.js"></script>
     </head>
     <body>
-        <div id="v-app">
-            <h1>Websockets</h1>
-            <form>
-                <input v-model="text" type="text"/>
-                <button type="submit" @click.prevent="sendChatMessage()">send</button>
-            </form>
-            <ul>
-                <li v-for="msg of messages">
-                    <strong>{{ msg.sender }}:</strong>
-                    {{ msg.message }}
-                </li>
-            </ul>
-        </div>
+        <main>
+            <section class="alerts">
+                alerts
+            </section>
+            <section id="v-app" class="chat">
+                <h1>Websockets</h1>
+                <form>
+                    <input v-model="text" type="text"/>
+                    <button type="submit" @click.prevent="sendChatMessage()">send</button>
+                </form>
+                <ul>
+                    <li v-for="msg of messages">
+                        <strong>{{ msg.sender }}:</strong>
+                        {{ msg.message }}
+                    </li>
+                </ul>
+            </section>
+        </main>
+
         <script>
           const app = new Vue({
             el: '#v-app',
@@ -31,6 +38,7 @@
               title: 'Websockets testing',
               text: '',
               messages: [],
+              alerts: [],
               socket: {chat: null, alerts: null},
             },
             methods: {
@@ -40,13 +48,22 @@
               },
               receiveChatMessage(msg) {
                 this.messages.push(msg);
+              },
+              receiveAlertMessage(msg) {
+                this.alerts.push(msg);
               }
             },
             created() {
               this.username = prompt('Enter your username:');
+
               this.socket.chat = new io('http://localhost:3000/chat');
               this.socket.chat.on('chatToClient', (msg) => {
                 this.receiveChatMessage(msg);
+              })
+
+              this.socket.alerts = new io('http://localhost:3000/alert');
+              this.socket.alerts.on('alertToClient', (msg) => {
+                this.receiveAlertMessage(msg);
               })
             }
           })
