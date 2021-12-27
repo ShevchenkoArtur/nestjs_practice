@@ -3,7 +3,7 @@ import {
   OnGatewayDisconnect,
   OnGatewayInit,
   SubscribeMessage,
-  WebSocketGateway,
+  WebSocketGateway, WebSocketServer,
   WsResponse,
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
@@ -13,6 +13,8 @@ import { Socket, Server } from 'socket.io';
 export class AppGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
+  @WebSocketServer() wss: Server;
+
   private logger: Logger = new Logger('AppGateway');
 
   afterInit(server: Server): any {
@@ -27,15 +29,15 @@ export class AppGateway
     this.logger.log(`Client disconnected ${client.id}`);
   }
 
-  // V1 WITH TYPES
-  @SubscribeMessage('msgToServer')
-  handleMessage(client: Socket, text: string): WsResponse<string> {
-    return { event: 'msgToClient', data: 'Hello world!' };
-  }
-
-  // V2 WITHOUT TYPES
+  // V1 WITH TYPES (without server)
   // @SubscribeMessage('msgToServer')
-  // handleMessage(client: Socket, text: string): void {
-  //   client.emit('msgToClient', text);
+  // handleMessage(client: Socket, text: string): WsResponse<string> {
+  //   return { event: 'msgToClient', data: text };
   // }
+
+  // V2 WITHOUT TYPES (with server)
+  @SubscribeMessage('msgToServer')
+  handleMessage(client: Socket, text: string): void {
+    this.wss.emit('msgToClient', text);
+  }
 }
